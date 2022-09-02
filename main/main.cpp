@@ -15,148 +15,62 @@
 #include <lvgl.h>
 #include <lvgl_helpers.h>
 
-
 extern "C" {
     #include <ui.h>
 }
 
 #define LV_TICK_PERIOD_MS 5
 
-const axp192_t axp = {
-	.read = &i2c_read,
-	.write = &i2c_write,
-};
-
-static void set_led(const axp192_t *axp, bool on);
-
-enum toggle_id {
-	TOGGLE_LED = 0,
-	TOGGLE_VIB,
-	TOGGLE_5V,
-};
+axp192_t axp;
 
 static void lv_tick_task(void *arg)
 {
 	(void) arg;
-
 	lv_tick_inc(LV_TICK_PERIOD_MS);
 }
 
-
-static void set_axp192_gpio_012(const axp192_t *axp, int gpio, bool low)
+static void set_led(bool on)
 {
-	if ((gpio < 0) || (gpio > 2)) {
-		return;
-	}
-
-	uint8_t val = 0;
-	axp192_read_reg(axp, AXP192_GPIO20_SIGNAL_STATUS, &val);
-
-	uint8_t mask = (1 << gpio);
-	if (low) {
-		val &= ~mask;
-	} else {
-		val |= mask;
-	}
-
-	axp192_write_reg(axp, AXP192_GPIO20_SIGNAL_STATUS, val);
+	axp192_ioctl(&axp, AXP192_GPIO1_SET_LEVEL, on);
 }
-
-static void set_axp192_gpio_34(const axp192_t *axp, int gpio, bool low)
-{
-	if ((gpio < 3) || (gpio > 4)) {
-		return;
-	}
-
-	uint8_t val = 0;
-	axp192_read_reg(axp, AXP192_GPIO40_SIGNAL_STATUS, &val);
-
-	uint8_t mask = (1 << (gpio - 3));
-	if (low) {
-		val &= ~mask;
-	} else {
-		val |= mask;
-	}
-
-	axp192_write_reg(axp, AXP192_GPIO40_SIGNAL_STATUS, val);
-}
-
-static void set_led(const axp192_t *axp, bool on)
-{
-	set_axp192_gpio_012(axp, 1, on);
-}
-
 
 void mainTask(void *parameter) {
+
+	static i2c_port_t i2c_port = I2C_NUM_1;
+
+	i2c_init(i2c_port);
+	
+	axp.read = &i2c_read;
+	axp.write = &i2c_write;
+    axp.handle = &i2c_port;
+
+	axp192_ioctl(&axp, AXP192_DCDC1_SET_VOLTAGE, 3300); //MCU
+	axp192_ioctl(&axp, AXP192_DCDC1_ENABLE);
+
+	axp192_ioctl(&axp, AXP192_DCDC3_SET_VOLTAGE, 2800); //BACKLIGHT
+	axp192_ioctl(&axp, AXP192_DCDC3_ENABLE);
+
+	axp192_ioctl(&axp, AXP192_LDO2_SET_VOLTAGE, 3300); //PERIPHERAL
+	axp192_ioctl(&axp, AXP192_LDO2_ENABLE);
+
+	axp192_ioctl(&axp, AXP192_LDO3_SET_VOLTAGE, 2000); //MOTOR
+	axp192_ioctl(&axp, AXP192_LDO3_DISABLE);
+
+	axp192_ioctl(&axp, AXP192_LDOIO0_SET_VOLTAGE, 3300); //ONBOARD 5V
+	axp192_ioctl(&axp, AXP192_GPIO0_SET_LEVEL, AXP192_LOW); 
+	axp192_ioctl(&axp, AXP192_EXTEN_DISABLE);
+	
+	set_led(AXP192_HIGH);
+
+	axp192_ioctl(&axp, AXP192_GPIO4_SET_LEVEL, AXP192_HIGH);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
+	axp192_ioctl(&axp, AXP192_GPIO4_SET_LEVEL, AXP192_LOW);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 
 	lv_init();
 	lvgl_interface_init();
 	lvgl_display_gpios_init();
 	touch_driver_init();
-	
-	struct rail_entry {
-		const char *name;
-		axp192_rail_t rail;
-		uint16_t millivolts;
-	};
-
-	struct rail_entry rails[] = {
-		{ "DCDC1 (MCU_VDD)",  AXP192_RAIL_DCDC1, 3300 },
-		{ "DCDC3 (LCD_BL)",   AXP192_RAIL_DCDC3, 2800 },
-		{ "LDO2 (PERI_VDD)",  AXP192_RAIL_LDO2,  3300 },
-		{ "LDO3 (VIB_MOTOR)", AXP192_RAIL_LDO3,  2000 },
-	};
-
-	for (int i = 0; i < sizeof(rails) / sizeof(rails[0]); i++) {
-		bool enabled;
-		uint16_t millivolts;
-		axp192_err_t err = axp192_get_rail_millivolts(&axp, rails[i].rail, &millivolts);
-		if (err != AXP192_ERROR_OK) {
-			printf("%s: get failed\n", rails[i].name);
-			continue;
-		}
-
-		enabled = false;
-		err = axp192_get_rail_state(&axp, rails[i].rail, &enabled);
-		if (err != AXP192_ERROR_OK) {
-			printf("%s: get state failed\n", rails[i].name);
-			continue;
-		}
-
-		printf("%s: get %d mV (%s)\n", rails[i].name, millivolts, enabled ? "enabled" : "disabled");
-
-		err = axp192_set_rail_millivolts(&axp, rails[i].rail, rails[i].millivolts);
-		if (err != AXP192_ERROR_OK) {
-			printf("%s: set failed\n", rails[i].name);
-			continue;
-		}
-
-		printf("%s: set %d mV\n", rails[i].name, rails[i].millivolts);
-	}
-	
-	axp192_write_reg(&axp, AXP192_CHARGE_CONTROL_1, 0xC1);
-	axp192_write_reg(&axp, AXP192_CHARGE_CONTROL_2, 0x41);
-
-	float volts;
-	axp192_read(&axp, AXP192_BATTERY_VOLTAGE, &volts);
-	printf("Battery voltage: %.2f volts\n", volts);
-
-
-	axp192_write_reg(&axp, AXP192_GPIO1_CONTROL, 0);
-	axp192_write_reg(&axp, AXP192_GPIO2_CONTROL, 0);
-	axp192_write_reg(&axp, AXP192_GPIO40_FUNCTION_CONTROL, (1 << 7) | (1 << 2) | (1 << 0));
-	axp192_write_reg(&axp, AXP192_PEK, (1 << 6) | (0 << 4) | (1 << 3) | (1 << 2) | (0 << 0));
-	axp192_write_reg(&axp, AXP192_BATTERY_CHARGE_CONTROL, (1 << 7) | (1 << 5) | (0 << 0));
-	
-	axp192_set_rail_state(&axp, AXP192_RAIL_DCDC3, true);
-	axp192_set_rail_state(&axp, AXP192_RAIL_LDO2, true);
-
-	set_led(&axp, true);
-
-	set_axp192_gpio_34(&axp, 4, true);
-	vTaskDelay(100 / portTICK_PERIOD_MS);
-	set_axp192_gpio_34(&axp, 4, false);
-	vTaskDelay(100 / portTICK_PERIOD_MS);
 
 	size_t display_buffer_size = lvgl_get_display_buffer_size();
 
@@ -177,9 +91,8 @@ void mainTask(void *parameter) {
 
 	disp_driver_init(&disp_drv);
 	
-
 	ui_init();
-	
+
 	lv_indev_drv_t indev_drv;
 	lv_indev_drv_init(&indev_drv);
 	indev_drv.read_cb = touch_driver_read;
@@ -200,8 +113,7 @@ void mainTask(void *parameter) {
 	esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000);
 
 	while (true) {
-		vTaskDelay(5 / portTICK_PERIOD_MS);
-
+		vTaskDelay(1 / portTICK_PERIOD_MS);
 		lv_task_handler();
 	}
 
@@ -211,5 +123,4 @@ extern "C" void app_main()
 {
     initArduino();
 	xTaskCreatePinnedToCore(mainTask, "mainTask", 8192, nullptr, 10, nullptr, APP_CPU_NUM);
-
 }

@@ -17,10 +17,21 @@ extern "C" {
 #endif
 
 extern lv_obj_t * ui_Screen1;
+extern lv_obj_t * ui_Button1;
+extern lv_obj_t * ui_Button2;
+extern lv_obj_t * ui_Slider1;
 extern lv_obj_t * ui_Roller1;
-extern lv_obj_t * ui_Slider3;
+extern lv_obj_t * ui_Roller2;
+extern lv_obj_t * ui_Label1;
 extern lv_obj_t * ui_Screen2;
-extern lv_obj_t * ui_Chart2;
+extern lv_obj_t * ui_Button3;
+extern lv_obj_t * ui_Button4;
+extern lv_obj_t * ui_Dropdown1;
+extern lv_obj_t * ui_Spinner1;
+extern lv_obj_t * ui_Screen3;
+extern lv_obj_t * ui_Button5;
+extern lv_obj_t * ui_Button6;
+extern lv_obj_t * ui_Colorwheel2;
 
 
 
