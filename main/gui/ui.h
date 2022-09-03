@@ -16,6 +16,8 @@ extern "C" {
 #include "lvgl/lvgl.h"
 #endif
 
+extern lv_obj_t * ui_Logo;
+extern lv_obj_t * ui_Image1;
 extern lv_obj_t * ui_Screen1;
 extern lv_obj_t * ui_Button1;
 extern lv_obj_t * ui_Button2;
@@ -34,6 +36,7 @@ extern lv_obj_t * ui_Button6;
 extern lv_obj_t * ui_Colorwheel2;
 
 
+LV_IMG_DECLARE(ui_img_m5logo2022_png);    // assets/m5logo2022.png
 
 
 

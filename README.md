@@ -4,6 +4,8 @@ Basic M5Stack Core2 Example
 This repository is intended as a straightforward example or base project for
 using the M5Stack Core2 with ESP-IDF directly in C - i.e. No Arduino.
 
+Arduino is added as a component but is not required for display.
+
 Because it's intended as an example to learn and copy-paste from, the code
 favors simplicity and "obviousness" over clean abstractions and good practice.
 It exists only to provide a minimum-viable reference for how to bring up the
@@ -31,24 +33,17 @@ At present, a subset of the board's features are supported:
 - LCD and Touchscreen
   - GUI supported using `lvgl` and `lvgl_esp32_drivers`
 
-"Out of the box", it will boot to a simple GUI where you can toggle the LED,
-vibration motor, and 5 V bus power on and off.
+"Out of the box", it will boot to a simple GUI made in squareline studio.
 
 ![Screenshot - see "Known Issues" wrt. CPU usage](screenshot.jpg)
 
 Building
 --------
 
-This project builds using ESP-IDF. I have been building it with a random git
-snapshot of ESP-IDF from mid 2020. Specifically, the version is reported as:
-
+This project builds using ESP-IDF. I have been building it with a v4.4 ESP-IDF.
 ```
-ESP-IDF v4.2-dev-1099-g38102d0e4
+release/v4.4 836f9875b10f7242b5c53598a50a4b483de47f75
 ```
-
-I believe it should work with any v4 version (where `idf.py` is used instead of
-`make`), but I will be happy to receive pull requests to fix the build if there
-are any issues.
 
 To build it, in a shell where you have already set up ESP-IDF (i.e. have sourced
 `export.sh`):
@@ -78,7 +73,6 @@ others are quick hacks.
 This provides a dead simple i2c abstraction, which is used by the AXP192 driver.
 
 - Upstream: `https://github.com/tuupola/esp_i2c_hal`
-- Downstream: `https://github.com/usedbytes/esp_i2c_hal`
 
 #### Modifications:
 - Not using the most recent upstream version, which changed the API in a
@@ -92,7 +86,6 @@ This provides a dead simple i2c abstraction, which is used by the AXP192 driver.
 Driver for the AXP192 PMIC.
 
 - Upstream: `https://github.com/tuupola/axp192`
-- Downstream: `https://github.com/usedbytes/axp192`
 
 #### Modifications:
 - Not using the "init commands" functionality from upstream, which isn't
@@ -118,7 +111,6 @@ Drivers for common ESP32 LCD and touch controllers, for use with LVGL.
 See "known issues".
 
 - Upstream: `https://github.com/lvgl/lvgl_esp32_drivers`
-- Downstream: `https://github.com/usedbytes/lvgl_esp32_drivers`
 
 #### Modifications:
 - Hack the correct screen orientation for M5Core2

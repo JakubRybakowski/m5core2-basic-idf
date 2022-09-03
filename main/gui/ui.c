@@ -7,6 +7,8 @@
 #include "ui_helpers.h"
 
 ///////////////////// VARIABLES ////////////////////
+lv_obj_t * ui_Logo;
+lv_obj_t * ui_Image1;
 lv_obj_t * ui_Screen1;
 lv_obj_t * ui_Button1;
 lv_obj_t * ui_Button2;
@@ -35,6 +37,14 @@ lv_obj_t * ui_Colorwheel2;
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
+static void ui_event_Logo(lv_event_t * e)
+{
+    lv_event_code_t event = lv_event_get_code(e);
+    lv_obj_t * ta = lv_event_get_target(e);
+    if(event == LV_EVENT_SCREEN_LOADED) {
+        _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 100, 1000);
+    }
+}
 static void ui_event_Button1(lv_event_t * e)
 {
     lv_event_code_t event = lv_event_get_code(e);
@@ -85,6 +95,34 @@ static void ui_event_Button6(lv_event_t * e)
 }
 
 ///////////////////// SCREENS ////////////////////
+void ui_Logo_screen_init(void)
+{
+
+    // ui_Logo
+
+    ui_Logo = lv_obj_create(NULL);
+
+    lv_obj_clear_flag(ui_Logo, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_add_event_cb(ui_Logo, ui_event_Logo, LV_EVENT_ALL, NULL);
+
+    // ui_Image1
+
+    ui_Image1 = lv_img_create(ui_Logo);
+    lv_img_set_src(ui_Image1, &ui_img_m5logo2022_png);
+
+    lv_obj_set_width(ui_Image1, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_Image1, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_Image1, 0);
+    lv_obj_set_y(ui_Image1, 0);
+
+    lv_obj_set_align(ui_Image1, LV_ALIGN_CENTER);
+
+    lv_obj_add_flag(ui_Image1, LV_OBJ_FLAG_ADV_HITTEST);
+    lv_obj_clear_flag(ui_Image1, LV_OBJ_FLAG_SCROLLABLE);
+
+}
 void ui_Screen1_screen_init(void)
 {
 
@@ -324,9 +362,10 @@ void ui_init(void)
     lv_theme_t * theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED),
                                                true, LV_FONT_DEFAULT);
     lv_disp_set_theme(dispp, theme);
+    ui_Logo_screen_init();
     ui_Screen1_screen_init();
     ui_Screen2_screen_init();
     ui_Screen3_screen_init();
-    lv_disp_load_scr(ui_Screen1);
+    lv_disp_load_scr(ui_Logo);
 }
 
