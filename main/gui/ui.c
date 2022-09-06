@@ -9,22 +9,18 @@
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_Logo;
 lv_obj_t * ui_Image1;
-lv_obj_t * ui_Screen1;
-lv_obj_t * ui_Button1;
-lv_obj_t * ui_Button2;
-lv_obj_t * ui_Slider1;
-lv_obj_t * ui_Roller1;
-lv_obj_t * ui_Roller2;
+lv_obj_t * ui_Htop;
+lv_obj_t * ui_Label2;
+lv_obj_t * ui_Label3;
+lv_obj_t * ui_Label4;
+lv_obj_t * ui_Label5;
 lv_obj_t * ui_Label1;
-lv_obj_t * ui_Screen2;
-lv_obj_t * ui_Button3;
-lv_obj_t * ui_Button4;
-lv_obj_t * ui_Dropdown1;
-lv_obj_t * ui_Spinner1;
-lv_obj_t * ui_Screen3;
-lv_obj_t * ui_Button5;
-lv_obj_t * ui_Button6;
-lv_obj_t * ui_Colorwheel2;
+lv_obj_t * ui_Label6;
+lv_obj_t * ui_labelCharge;
+lv_obj_t * ui_labelDischarge;
+lv_obj_t * ui_labelVoltage;
+lv_obj_t * ui_labelVbus;
+lv_obj_t * ui_labelIbus;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
@@ -42,55 +38,7 @@ static void ui_event_Logo(lv_event_t * e)
     lv_event_code_t event = lv_event_get_code(e);
     lv_obj_t * ta = lv_event_get_target(e);
     if(event == LV_EVENT_SCREEN_LOADED) {
-        _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 100, 1000);
-    }
-}
-static void ui_event_Button1(lv_event_t * e)
-{
-    lv_event_code_t event = lv_event_get_code(e);
-    lv_obj_t * ta = lv_event_get_target(e);
-    if(event == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_Screen3, LV_SCR_LOAD_ANIM_FADE_ON, 0, 0);
-    }
-}
-static void ui_event_Button2(lv_event_t * e)
-{
-    lv_event_code_t event = lv_event_get_code(e);
-    lv_obj_t * ta = lv_event_get_target(e);
-    if(event == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_Screen2, LV_SCR_LOAD_ANIM_FADE_ON, 0, 0);
-    }
-}
-static void ui_event_Button3(lv_event_t * e)
-{
-    lv_event_code_t event = lv_event_get_code(e);
-    lv_obj_t * ta = lv_event_get_target(e);
-    if(event == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 0, 0);
-    }
-}
-static void ui_event_Button4(lv_event_t * e)
-{
-    lv_event_code_t event = lv_event_get_code(e);
-    lv_obj_t * ta = lv_event_get_target(e);
-    if(event == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_Screen3, LV_SCR_LOAD_ANIM_FADE_ON, 0, 0);
-    }
-}
-static void ui_event_Button5(lv_event_t * e)
-{
-    lv_event_code_t event = lv_event_get_code(e);
-    lv_obj_t * ta = lv_event_get_target(e);
-    if(event == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_Screen2, LV_SCR_LOAD_ANIM_FADE_ON, 0, 0);
-    }
-}
-static void ui_event_Button6(lv_event_t * e)
-{
-    lv_event_code_t event = lv_event_get_code(e);
-    lv_obj_t * ta = lv_event_get_target(e);
-    if(event == LV_EVENT_CLICKED) {
-        _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_FADE_ON, 0, 0);
+        _ui_screen_change(ui_Htop, LV_SCR_LOAD_ANIM_FADE_ON, 100, 1000);
     }
 }
 
@@ -123,236 +71,168 @@ void ui_Logo_screen_init(void)
     lv_obj_clear_flag(ui_Image1, LV_OBJ_FLAG_SCROLLABLE);
 
 }
-void ui_Screen1_screen_init(void)
+void ui_Htop_screen_init(void)
 {
 
-    // ui_Screen1
+    // ui_Htop
 
-    ui_Screen1 = lv_obj_create(NULL);
+    ui_Htop = lv_obj_create(NULL);
 
-    lv_obj_clear_flag(ui_Screen1, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(ui_Htop, LV_OBJ_FLAG_SCROLLABLE);
 
-    // ui_Button1
+    // ui_Label2
 
-    ui_Button1 = lv_btn_create(ui_Screen1);
+    ui_Label2 = lv_label_create(ui_Htop);
 
-    lv_obj_set_width(ui_Button1, 40);
-    lv_obj_set_height(ui_Button1, 40);
+    lv_obj_set_width(ui_Label2, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_Label2, LV_SIZE_CONTENT);
 
-    lv_obj_set_x(ui_Button1, -140);
-    lv_obj_set_y(ui_Button1, 0);
+    lv_obj_set_x(ui_Label2, 0);
+    lv_obj_set_y(ui_Label2, -100);
 
-    lv_obj_set_align(ui_Button1, LV_ALIGN_CENTER);
+    lv_obj_set_align(ui_Label2, LV_ALIGN_CENTER);
 
-    lv_obj_add_flag(ui_Button1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_obj_clear_flag(ui_Button1, LV_OBJ_FLAG_SCROLLABLE);
+    lv_label_set_text(ui_Label2, "HTOP");
 
-    lv_obj_add_event_cb(ui_Button1, ui_event_Button1, LV_EVENT_ALL, NULL);
+    // ui_Label3
 
-    // ui_Button2
+    ui_Label3 = lv_label_create(ui_Htop);
 
-    ui_Button2 = lv_btn_create(ui_Screen1);
+    lv_obj_set_width(ui_Label3, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_Label3, LV_SIZE_CONTENT);
 
-    lv_obj_set_width(ui_Button2, 40);
-    lv_obj_set_height(ui_Button2, 40);
+    lv_obj_set_x(ui_Label3, 50);
+    lv_obj_set_y(ui_Label3, -60);
 
-    lv_obj_set_x(ui_Button2, 140);
-    lv_obj_set_y(ui_Button2, 0);
+    lv_obj_set_align(ui_Label3, LV_ALIGN_LEFT_MID);
 
-    lv_obj_set_align(ui_Button2, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label3, "Charge");
 
-    lv_obj_add_flag(ui_Button2, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_obj_clear_flag(ui_Button2, LV_OBJ_FLAG_SCROLLABLE);
+    // ui_Label4
 
-    lv_obj_add_event_cb(ui_Button2, ui_event_Button2, LV_EVENT_ALL, NULL);
+    ui_Label4 = lv_label_create(ui_Htop);
 
-    // ui_Slider1
+    lv_obj_set_width(ui_Label4, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_Label4, LV_SIZE_CONTENT);
 
-    ui_Slider1 = lv_slider_create(ui_Screen1);
-    lv_slider_set_range(ui_Slider1, 0, 100);
+    lv_obj_set_x(ui_Label4, 50);
+    lv_obj_set_y(ui_Label4, -30);
 
-    lv_obj_set_width(ui_Slider1, 150);
-    lv_obj_set_height(ui_Slider1, 10);
+    lv_obj_set_align(ui_Label4, LV_ALIGN_LEFT_MID);
 
-    lv_obj_set_x(ui_Slider1, 0);
-    lv_obj_set_y(ui_Slider1, 85);
+    lv_label_set_text(ui_Label4, "Discharge");
 
-    lv_obj_set_align(ui_Slider1, LV_ALIGN_CENTER);
+    // ui_Label5
 
-    // ui_Roller1
+    ui_Label5 = lv_label_create(ui_Htop);
 
-    ui_Roller1 = lv_roller_create(ui_Screen1);
-    lv_roller_set_options(ui_Roller1, "Option 1\nOption 2\nOption 3", LV_ROLLER_MODE_NORMAL);
+    lv_obj_set_width(ui_Label5, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_Label5, LV_SIZE_CONTENT);
 
-    lv_obj_set_height(ui_Roller1, 100);
-    lv_obj_set_width(ui_Roller1, LV_SIZE_CONTENT);
+    lv_obj_set_x(ui_Label5, 50);
+    lv_obj_set_y(ui_Label5, 0);
 
-    lv_obj_set_x(ui_Roller1, 60);
-    lv_obj_set_y(ui_Roller1, 0);
+    lv_obj_set_align(ui_Label5, LV_ALIGN_LEFT_MID);
 
-    lv_obj_set_align(ui_Roller1, LV_ALIGN_CENTER);
-
-    // ui_Roller2
-
-    ui_Roller2 = lv_roller_create(ui_Screen1);
-    lv_roller_set_options(ui_Roller2, "Option 1\nOption 2\nOption 3", LV_ROLLER_MODE_NORMAL);
-
-    lv_obj_set_height(ui_Roller2, 100);
-    lv_obj_set_width(ui_Roller2, LV_SIZE_CONTENT);
-
-    lv_obj_set_x(ui_Roller2, -60);
-    lv_obj_set_y(ui_Roller2, 0);
-
-    lv_obj_set_align(ui_Roller2, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label5, "Voltage");
 
     // ui_Label1
 
-    ui_Label1 = lv_label_create(ui_Screen1);
+    ui_Label1 = lv_label_create(ui_Htop);
 
     lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);
     lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);
 
-    lv_obj_set_x(ui_Label1, 0);
-    lv_obj_set_y(ui_Label1, -80);
+    lv_obj_set_x(ui_Label1, 50);
+    lv_obj_set_y(ui_Label1, 30);
 
-    lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
+    lv_obj_set_align(ui_Label1, LV_ALIGN_LEFT_MID);
 
-    lv_label_set_text(ui_Label1, "TEST");
+    lv_label_set_text(ui_Label1, "Volatge USB");
 
-}
-void ui_Screen2_screen_init(void)
-{
+    // ui_Label6
 
-    // ui_Screen2
+    ui_Label6 = lv_label_create(ui_Htop);
 
-    ui_Screen2 = lv_obj_create(NULL);
+    lv_obj_set_width(ui_Label6, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_Label6, LV_SIZE_CONTENT);
 
-    lv_obj_clear_flag(ui_Screen2, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_x(ui_Label6, 50);
+    lv_obj_set_y(ui_Label6, 60);
 
-    // ui_Button3
+    lv_obj_set_align(ui_Label6, LV_ALIGN_LEFT_MID);
 
-    ui_Button3 = lv_btn_create(ui_Screen2);
+    lv_label_set_text(ui_Label6, "USB current");
 
-    lv_obj_set_width(ui_Button3, 40);
-    lv_obj_set_height(ui_Button3, 40);
+    // ui_labelCharge
 
-    lv_obj_set_x(ui_Button3, -140);
-    lv_obj_set_y(ui_Button3, 0);
+    ui_labelCharge = lv_label_create(ui_Htop);
 
-    lv_obj_set_align(ui_Button3, LV_ALIGN_CENTER);
+    lv_obj_set_width(ui_labelCharge, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_labelCharge, LV_SIZE_CONTENT);
 
-    lv_obj_add_flag(ui_Button3, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_obj_clear_flag(ui_Button3, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_x(ui_labelCharge, -50);
+    lv_obj_set_y(ui_labelCharge, -60);
 
-    lv_obj_add_event_cb(ui_Button3, ui_event_Button3, LV_EVENT_ALL, NULL);
+    lv_obj_set_align(ui_labelCharge, LV_ALIGN_RIGHT_MID);
 
-    // ui_Button4
+    lv_label_set_text(ui_labelCharge, "Text");
 
-    ui_Button4 = lv_btn_create(ui_Screen2);
+    // ui_labelDischarge
 
-    lv_obj_set_width(ui_Button4, 40);
-    lv_obj_set_height(ui_Button4, 40);
+    ui_labelDischarge = lv_label_create(ui_Htop);
 
-    lv_obj_set_x(ui_Button4, 140);
-    lv_obj_set_y(ui_Button4, 0);
+    lv_obj_set_width(ui_labelDischarge, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_labelDischarge, LV_SIZE_CONTENT);
 
-    lv_obj_set_align(ui_Button4, LV_ALIGN_CENTER);
+    lv_obj_set_x(ui_labelDischarge, -50);
+    lv_obj_set_y(ui_labelDischarge, -30);
 
-    lv_obj_add_flag(ui_Button4, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_obj_clear_flag(ui_Button4, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_align(ui_labelDischarge, LV_ALIGN_RIGHT_MID);
 
-    lv_obj_add_event_cb(ui_Button4, ui_event_Button4, LV_EVENT_ALL, NULL);
+    lv_label_set_text(ui_labelDischarge, "Text");
 
-    // ui_Dropdown1
+    // ui_labelVoltage
 
-    ui_Dropdown1 = lv_dropdown_create(ui_Screen2);
-    lv_dropdown_set_options(ui_Dropdown1, "Option 1\nOption 2\nOption 3");
-    lv_dropdown_set_text(ui_Dropdown1, "");
+    ui_labelVoltage = lv_label_create(ui_Htop);
 
-    lv_obj_set_width(ui_Dropdown1, 150);
-    lv_obj_set_height(ui_Dropdown1, LV_SIZE_CONTENT);
+    lv_obj_set_width(ui_labelVoltage, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_labelVoltage, LV_SIZE_CONTENT);
 
-    lv_obj_set_x(ui_Dropdown1, 0);
-    lv_obj_set_y(ui_Dropdown1, 20);
+    lv_obj_set_x(ui_labelVoltage, -50);
+    lv_obj_set_y(ui_labelVoltage, 0);
 
-    lv_obj_set_align(ui_Dropdown1, LV_ALIGN_CENTER);
+    lv_obj_set_align(ui_labelVoltage, LV_ALIGN_RIGHT_MID);
 
-    lv_obj_add_flag(ui_Dropdown1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_label_set_text(ui_labelVoltage, "Text");
 
-    lv_obj_set_style_text_color(ui_Dropdown1, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_Dropdown1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    // ui_labelVbus
 
-    // ui_Spinner1
+    ui_labelVbus = lv_label_create(ui_Htop);
 
-    ui_Spinner1 = lv_spinner_create(ui_Screen2, 1000, 90);
+    lv_obj_set_width(ui_labelVbus, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_labelVbus, LV_SIZE_CONTENT);
 
-    lv_obj_set_width(ui_Spinner1, 80);
-    lv_obj_set_height(ui_Spinner1, 80);
+    lv_obj_set_x(ui_labelVbus, -50);
+    lv_obj_set_y(ui_labelVbus, 30);
 
-    lv_obj_set_x(ui_Spinner1, 0);
-    lv_obj_set_y(ui_Spinner1, -50);
+    lv_obj_set_align(ui_labelVbus, LV_ALIGN_RIGHT_MID);
 
-    lv_obj_set_align(ui_Spinner1, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_labelVbus, "Text");
 
-    lv_obj_clear_flag(ui_Spinner1, LV_OBJ_FLAG_CLICKABLE);
+    // ui_labelIbus
 
-}
-void ui_Screen3_screen_init(void)
-{
+    ui_labelIbus = lv_label_create(ui_Htop);
 
-    // ui_Screen3
+    lv_obj_set_width(ui_labelIbus, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_labelIbus, LV_SIZE_CONTENT);
 
-    ui_Screen3 = lv_obj_create(NULL);
+    lv_obj_set_x(ui_labelIbus, -50);
+    lv_obj_set_y(ui_labelIbus, 60);
 
-    lv_obj_clear_flag(ui_Screen3, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_align(ui_labelIbus, LV_ALIGN_RIGHT_MID);
 
-    // ui_Button5
-
-    ui_Button5 = lv_btn_create(ui_Screen3);
-
-    lv_obj_set_width(ui_Button5, 40);
-    lv_obj_set_height(ui_Button5, 40);
-
-    lv_obj_set_x(ui_Button5, -140);
-    lv_obj_set_y(ui_Button5, 0);
-
-    lv_obj_set_align(ui_Button5, LV_ALIGN_CENTER);
-
-    lv_obj_add_flag(ui_Button5, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_obj_clear_flag(ui_Button5, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_obj_add_event_cb(ui_Button5, ui_event_Button5, LV_EVENT_ALL, NULL);
-
-    // ui_Button6
-
-    ui_Button6 = lv_btn_create(ui_Screen3);
-
-    lv_obj_set_width(ui_Button6, 40);
-    lv_obj_set_height(ui_Button6, 40);
-
-    lv_obj_set_x(ui_Button6, 140);
-    lv_obj_set_y(ui_Button6, 0);
-
-    lv_obj_set_align(ui_Button6, LV_ALIGN_CENTER);
-
-    lv_obj_add_flag(ui_Button6, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_obj_clear_flag(ui_Button6, LV_OBJ_FLAG_SCROLLABLE);
-
-    lv_obj_add_event_cb(ui_Button6, ui_event_Button6, LV_EVENT_ALL, NULL);
-
-    // ui_Colorwheel2
-
-    ui_Colorwheel2 = lv_colorwheel_create(ui_Screen3, true);
-
-    lv_obj_set_width(ui_Colorwheel2, 200);
-    lv_obj_set_height(ui_Colorwheel2, 200);
-
-    lv_obj_set_x(ui_Colorwheel2, 0);
-    lv_obj_set_y(ui_Colorwheel2, 0);
-
-    lv_obj_set_align(ui_Colorwheel2, LV_ALIGN_CENTER);
-
-    lv_obj_set_style_arc_width(ui_Colorwheel2, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text(ui_labelIbus, "Text");
 
 }
 
@@ -363,9 +243,7 @@ void ui_init(void)
                                                true, LV_FONT_DEFAULT);
     lv_disp_set_theme(dispp, theme);
     ui_Logo_screen_init();
-    ui_Screen1_screen_init();
-    ui_Screen2_screen_init();
-    ui_Screen3_screen_init();
+    ui_Htop_screen_init();
     lv_disp_load_scr(ui_Logo);
 }
 

@@ -3,27 +3,14 @@
 // Portions from lvgl example: https://github.com/lvgl/lv_port_esp32/blob/master/main/main.c
 
 #include <Arduino.h>
-#include <stdio.h>
 #include <sdkconfig.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <esp_spi_flash.h>
-
 #include <axp192.h>
-#include <i2c_helper.h>
-
 #include <lvgl.h>
 #include <lvgl_helpers.h>
-
-
-#include "driver/sdmmc_host.h"
-#include "driver/sdspi_host.h"
-#include "sdmmc_cmd.h"
-#include "esp_log.h"
-#include "esp_err.h"
-#include "esp_vfs_fat.h"
-
-#include <sys/stat.h>
+#include <esp_log.h>
+#include <i2c_manager.h>
 
 extern "C" {
     #include <ui.h>
@@ -186,58 +173,26 @@ void test_sd_card(void)
 */
 
 
-void mainTask(void *parameter) {
+[[noreturn]] void mainTask(void *parameter) {
+
+    (void) parameter;
 
     initArduino();
-	Serial.begin(2000000);
+    
+    Serial.setRxTimeout(1);
+	Serial.begin(115200, SERIAL_8N1, 3, 1, false, 1, 112);
 
-	static i2c_port_t i2c_port = I2C_NUM_1;
 
-	i2c_init(i2c_port);
+	i2c_manager_init(I2C_NUM_0);
 	
-	axp.read = &i2c_read;
-	axp.write = &i2c_write;
-    axp.handle = &i2c_port;
+	axp.read = &i2c_manager_read;
+	axp.write = i2c_manager_write;
+    axp.handle = I2C_NUM_0;
 
-	axp192_ioctl(&axp, AXP192_DCDC1_SET_VOLTAGE, 3300); //MCU
-	axp192_ioctl(&axp, AXP192_DCDC1_ENABLE);
-
-	axp192_ioctl(&axp, AXP192_DCDC3_SET_VOLTAGE, 2800); //BACKLIGHT
-	axp192_ioctl(&axp, AXP192_DCDC3_ENABLE);
-
-	axp192_ioctl(&axp, AXP192_LDO2_SET_VOLTAGE, 3300); //PERIPHERAL
-	axp192_ioctl(&axp, AXP192_LDO2_ENABLE);
-
-	axp192_ioctl(&axp, AXP192_LDO3_SET_VOLTAGE, 2000); //MOTOR
-	axp192_ioctl(&axp, AXP192_LDO3_DISABLE);
-
-	axp192_ioctl(&axp, AXP192_LDOIO0_SET_VOLTAGE, 3300); //ONBOARD 5V
-	axp192_ioctl(&axp, AXP192_GPIO0_SET_LEVEL, AXP192_LOW); 
-	axp192_ioctl(&axp, AXP192_EXTEN_DISABLE);
+    axp192_init(&axp);
 
 	axp192_ioctl(&axp, AXP192_COULOMB_COUNTER_ENABLE);
 
-	float vacin, iacin, vvbus, ivbus, temp, vts, pbat, vbat, icharge, idischarge, vaps, cbat;
-
-	/* All ADC registers will be read as floats. */
-	axp192_read(&axp, AXP192_ACIN_VOLTAGE, &vacin);
-	axp192_read(&axp, AXP192_ACIN_CURRENT, &iacin);
-	axp192_read(&axp, AXP192_VBUS_VOLTAGE, &vvbus);
-	axp192_read(&axp, AXP192_VBUS_CURRENT, &ivbus);
-	axp192_read(&axp, AXP192_TEMP, &temp);
-	axp192_read(&axp, AXP192_TS_INPUT, &vts);
-	axp192_read(&axp, AXP192_BATTERY_POWER, &pbat);
-	axp192_read(&axp, AXP192_BATTERY_VOLTAGE, &vbat);
-	axp192_read(&axp, AXP192_CHARGE_CURRENT, &icharge);
-	axp192_read(&axp, AXP192_DISCHARGE_CURRENT, &idischarge);
-	axp192_read(&axp, AXP192_APS_VOLTAGE, &vaps);
-	axp192_read(&axp, AXP192_COULOMB_COUNTER, &cbat);
-
-	printf(
-		"vacin: %.2fV iacin: %.2fA vvbus: %.2fV ivbus: %.2fA vts: %.2fV temp: %.0fC "
-		"pbat: %.2fmW vbat: %.2fV icharge: %.2fA idischarge: %.2fA, vaps: %.2fV cbat: %.2fmAh",
-		vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps, cbat
-	);
 	
 	set_led(AXP192_HIGH);
 
@@ -246,21 +201,20 @@ void mainTask(void *parameter) {
 	axp192_ioctl(&axp, AXP192_GPIO4_SET_LEVEL, AXP192_LOW);
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 
+
+    lvgl_i2c_locking(i2c_manager_locking());
 	lv_init();
 	lvgl_interface_init();
 	lvgl_display_gpios_init();
 	touch_driver_init();
 
+	static lv_disp_draw_buf_t disp_buf;
 	size_t display_buffer_size = lvgl_get_display_buffer_size();
-
 	auto* buf1 = (lv_color_t *) heap_caps_malloc(display_buffer_size * sizeof(lv_color_t), MALLOC_CAP_SPIRAM);
 	auto* buf2 = (lv_color_t *) heap_caps_malloc(display_buffer_size * sizeof(lv_color_t), MALLOC_CAP_SPIRAM);
-
-	static lv_disp_draw_buf_t disp_buf;
 	lv_disp_draw_buf_init(&disp_buf, buf1, buf2, display_buffer_size);
 
 	static lv_disp_drv_t disp_drv;
-	
 	lv_disp_drv_init(&disp_drv);
 	disp_drv.flush_cb = disp_driver_flush;
 	disp_drv.hor_res = 320u;
@@ -268,18 +222,17 @@ void mainTask(void *parameter) {
 	disp_drv.draw_buf = &disp_buf;
 	lv_disp_drv_register(&disp_drv);
 
-	disp_driver_init(&disp_drv);
-	
-	ui_init();
-
-	lv_indev_drv_t indev_drv;
+	static lv_indev_drv_t indev_drv;
 	lv_indev_drv_init(&indev_drv);
 	indev_drv.read_cb = touch_driver_read;
 	indev_drv.type = LV_INDEV_TYPE_POINTER;
 	lv_indev_drv_register(&indev_drv);
 
-	esp_timer_handle_t periodic_timer;
+	disp_driver_init(&disp_drv);
+	
+	ui_init();
 
+	esp_timer_handle_t periodic_timer;
 	const esp_timer_create_args_t periodic_timer_args = {
 		.callback = &lv_tick_task,
 		.arg = nullptr,
@@ -287,17 +240,42 @@ void mainTask(void *parameter) {
 		.name = "periodic_gui",
 		.skip_unhandled_events = false,
 	};
-
 	esp_timer_create(&periodic_timer_args, &periodic_timer);
 	esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000);
 
-	////test_sd_card();
-
+    int i = 0;
 	while (true) {
-		vTaskDelay(1 / portTICK_PERIOD_MS);
-		lv_task_handler();
-	}
+        if(i<10) {
+            i++;
+        } else {
+            i=0;
 
+            float vacin, iacin, vvbus, ivbus, temp, vts, pbat, vbat, icharge, idischarge, vaps, cbat;
+
+            axp192_read(&axp, AXP192_ACIN_VOLTAGE, &vacin);
+            axp192_read(&axp, AXP192_ACIN_CURRENT, &iacin);
+            axp192_read(&axp, AXP192_VBUS_VOLTAGE, &vvbus);
+            axp192_read(&axp, AXP192_VBUS_CURRENT, &ivbus);
+            axp192_read(&axp, AXP192_TEMP, &temp);
+            axp192_read(&axp, AXP192_TS_INPUT, &vts);
+            axp192_read(&axp, AXP192_BATTERY_POWER, &pbat);
+            axp192_read(&axp, AXP192_BATTERY_VOLTAGE, &vbat);
+            axp192_read(&axp, AXP192_CHARGE_CURRENT, &icharge);
+            axp192_read(&axp, AXP192_DISCHARGE_CURRENT, &idischarge);
+            axp192_read(&axp, AXP192_APS_VOLTAGE, &vaps);
+            axp192_read(&axp, AXP192_COULOMB_COUNTER, &cbat);
+
+            lv_label_set_text(ui_labelCharge, (String(icharge*1000)+" mA").c_str());
+            lv_label_set_text(ui_labelDischarge, (String(idischarge*1000)+" mA").c_str());
+            lv_label_set_text(ui_labelVoltage, (String(vbat)+" V").c_str());
+            lv_label_set_text(ui_labelVbus, (String(vacin)+" V").c_str());
+            lv_label_set_text(ui_labelIbus, (String(iacin*1000)+" mA").c_str());
+        }
+        
+		lv_task_handler();
+
+		vTaskDelay(30 / portTICK_PERIOD_MS);
+	}
 }
 
 extern "C" void app_main() 
