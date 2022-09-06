@@ -31,6 +31,7 @@ extern "C" {
 static const char *TAG = "SDCARD";*/
 
 axp192_t axp;
+esp_timer_handle_t periodic_timer;
 
 static void lv_tick_task(void *arg)
 {
@@ -179,8 +180,7 @@ void test_sd_card(void)
 
     initArduino();
     
-    Serial.setRxTimeout(1);
-	Serial.begin(115200, SERIAL_8N1, 3, 1, false, 1, 112);
+	Serial.begin(2000000, SERIAL_8N1, 3, 1, false, 1, 112);
 
 
 	i2c_manager_init(I2C_NUM_0);
@@ -232,7 +232,6 @@ void test_sd_card(void)
 	
 	ui_init();
 
-	esp_timer_handle_t periodic_timer;
 	const esp_timer_create_args_t periodic_timer_args = {
 		.callback = &lv_tick_task,
 		.arg = nullptr,
@@ -250,7 +249,7 @@ void test_sd_card(void)
         } else {
             i=0;
 
-            float vacin, iacin, vvbus, ivbus, temp, vts, pbat, vbat, icharge, idischarge, vaps, cbat;
+            float vacin, iacin, vvbus, ivbus, temp, vts, pbat, vbat, idischarge, vaps, cbat, icharge;
 
             axp192_read(&axp, AXP192_ACIN_VOLTAGE, &vacin);
             axp192_read(&axp, AXP192_ACIN_CURRENT, &iacin);
@@ -265,16 +264,19 @@ void test_sd_card(void)
             axp192_read(&axp, AXP192_APS_VOLTAGE, &vaps);
             axp192_read(&axp, AXP192_COULOMB_COUNTER, &cbat);
 
+
             lv_label_set_text(ui_labelCharge, (String(icharge*1000)+" mA").c_str());
             lv_label_set_text(ui_labelDischarge, (String(idischarge*1000)+" mA").c_str());
             lv_label_set_text(ui_labelVoltage, (String(vbat)+" V").c_str());
             lv_label_set_text(ui_labelVbus, (String(vacin)+" V").c_str());
             lv_label_set_text(ui_labelIbus, (String(iacin*1000)+" mA").c_str());
+            Serial.println(iacin*1000);
         }
-        
-		lv_task_handler();
 
-		vTaskDelay(30 / portTICK_PERIOD_MS);
+        lv_task_handler();
+
+
+		vTaskDelay(10 / portTICK_PERIOD_MS);
 	}
 }
 
